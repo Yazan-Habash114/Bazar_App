@@ -1,7 +1,7 @@
 import sqlite3 as sql
 import json
 from errors_handlers import *
-from flask import abort
+from flask import abort, request
 
 # Fetch book by ID
 def info(book_id):
@@ -20,11 +20,11 @@ def info(book_id):
 				#"id": result[0],
 				"title": result[1],
 				"topic": result[2],
-				#"quantitiy": result[3],
+				"quantity": result[3],
 				"price": result[4]
 			}
-		#else:
-		#	abort(404)
+		else:
+			abort(404)
 		
 		cursor.close()
 		
@@ -68,12 +68,12 @@ def search(topic):
 		
 
 # Update book by ID
-def update(book_id, quantity, price):
+def update(book_id, quantity):
 	book_updated = {}
 	try:
 		conn = sql.connect('database.sqlite')
 		cursor = conn.cursor()
-		cursor.execute('UPDATE Book SET Quantity = ?, Price = ? WHERE id = ?', (quantity, price, book_id,))
+		cursor.execute('UPDATE Book SET Quantity = ? WHERE id = ?', (quantity, book_id,))
 		conn.commit()
 		
 		result = cursor.execute('SELECT * FROM Book WHERE id = ?', (book_id,)).fetchone()
@@ -83,11 +83,11 @@ def update(book_id, quantity, price):
 				#"id": result[0],
 				"title": result[1],
 				"topic": result[2],
-				#"quantitiy": result[3],
+				"quantity": result[3],
 				"price": result[4]
 			}
-		#else:
-		#	abort(404)
+		else:
+			abort(404)
 		
 		cursor.close()
 		

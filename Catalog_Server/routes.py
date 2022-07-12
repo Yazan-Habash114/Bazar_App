@@ -1,6 +1,6 @@
 from book import info, search, update
-from flask_application import app
-
+from flask_application import app, request, abort
+import json
 
 # Get info about a book
 def get_info(book_id):
@@ -35,14 +35,17 @@ def queryFromDB(query, parameter):
 # Update an book according to specific ID
 @app.route('/update/<int:book_id>', methods=['PUT'])
 def update_book(book_id):
-	data = request.json
-	
-	if data is None:
-		data = {}
-	
-	if data.get('Quantity') is None or data.get('Price') is None:
+
+	if request is None:
 		abort(400)
 
-	book = update(book_id, data.get('Quantity'), data.get('Price'))
+	data_json = json.loads(request.data)
+
+	if data_json.get('quantity') is None:
+		abort(422)
+
+	quantity = data_json.get('quantity')
+
+	book = update(book_id, quantity)
 		
 	return book
