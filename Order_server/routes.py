@@ -20,6 +20,7 @@ def purchase(id):
         message = ""
         if(quantity == 0):
             message = "There is no any more book to buy"
+            return message, response.status_code, response.headers.items()
 
         else:
             data={'quantity': (quantity - 1), 'price': price}
