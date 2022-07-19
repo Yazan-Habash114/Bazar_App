@@ -5,6 +5,7 @@ import requests
 # Search query
 @app.route('/search/<topic>', methods=['GET'])
 def search_according_to_topic(topic):
+	# Call Catalog Server, get response
 	response = requests.get(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/query-by-subject/{topic}')
 	
 	return response.text, response.status_code, response.headers.items()
@@ -15,7 +16,7 @@ def search_according_to_topic(topic):
 def info_according_to_id(id):
 	if not id.isnumeric():
 		abort(422)
-	
+	# Call Catalog Server, get response
 	response = requests.get(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/query-by-item/{id}')
 	
 	return response.text, response.status_code, response.headers.items()
@@ -25,7 +26,7 @@ def info_according_to_id(id):
 def purchase(id):
 	if not id.isnumeric():
 		abort(422)
-	
+	# Call Catalog Server, get response
 	response = requests.get(f'http://{ORDER_SERVER_IP}:{ORDER_PORT}/purchase/{id}')
 	
 	return response.text, response.status_code, response.headers.items()
