@@ -11,7 +11,7 @@ def search_according_to_topic(topic):
 	
 	msg = ""
 	if response.status_code == 200:
-		msg = "Book with ID:"
+		msg = f"All books related with topic ({topic}):"
 	else:
 		msg = "Error! Cannot fetch book with ID"
 		
@@ -28,7 +28,7 @@ def info_according_to_id(id):
 	
 	msg = ""
 	if response.status_code == 200:
-		msg = "All books related to topic:"
+		msg = f"Book with ID ({id}):"
 	else:
 		msg = "Error! Cannot fetch book related to topic"
 	
