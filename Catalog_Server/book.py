@@ -112,3 +112,42 @@ def update(book_id, quantity):
 			conn.close()
 
 	return json.dumps(book_updated)
+	
+	
+# Update book info by ID
+def updateInfo(book_id, quantity, price):
+	book_updated = {}
+	try:
+		# Try to connecto to SQLite DB
+		conn = sql.connect('database.sqlite')
+		cursor = conn.cursor()
+		# Update the book in DB
+		print(price, quantity)
+		cursor.execute('UPDATE Book SET Quantity = ?, Price = ? WHERE id = ?', (quantity, price, book_id,))
+		# Commit
+		conn.commit()
+		
+		# Get the book after updating it
+		result = cursor.execute('SELECT * FROM Book WHERE id = ?', (book_id,)).fetchone()
+		
+		if result is not None:
+			book_updated = {
+				#"id": result[0],
+				"title": result[1],
+				"topic": result[2],
+				"quantity": result[3],
+				"price": result[4]
+			}
+		else:
+			abort(404)
+		
+		cursor.close()
+		
+	except sql.Error as err:
+		print("Failed to update single row in Book table.")
+	
+	finally:
+		if conn:
+			conn.close()
+
+	return json.dumps(book_updated)	
