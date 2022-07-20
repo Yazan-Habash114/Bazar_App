@@ -1,54 +1,78 @@
-from book import info, search, update
-from flask_application import app, request, abort
+from flask_application import app, CATALOG_SERVER_IP, ORDER_SERVER_IP, ORDER_PORT, CATALOG_PORT, abort, request
+import requests
 import json
 
-# Get info about a book
-def get_info(book_id):
-	return info(book_id)
 
-
-# Get all books about specific subject/topic
-def get_books_related_to_topic(book_topic):
-	return search(book_topic)
-
-
-# The queries is only two categories, query-by-item & query-by-subject
-queries = {
-	'query-by-item': {
-		'function': get_info
-	},
-	'query-by-subject': {
-		'function': get_books_related_to_topic
-	}
-}
-
-
-# Get query and filter it
-@app.route('/<string:query>/<parameter>', methods=['GET'])
-def queryFromDB(query, parameter):
-	# If query is not in two categories
-	if query not in queries:
-		return 'Invalid query method has been called called', 404
+# Search query
+@app.route('/search/<topic>', methods=['GET'])
+def search_according_to_topic(topic):
+	# Call Catalog Server, get response
+	response = requests.get(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/query-by-subject/{topic}')
 	
-	# Get the procedure from dictionary then call it
-	return queries[query]['function'](parameter)
-
-
-# Update an book according to specific ID
-@app.route('/update/<int:book_id>', methods=['PUT'])
-def update_book(book_id):
-
-	if request is None:
-		abort(400)
-
-	data_json = json.loads(request.data)
-
-	# If there is no quantity key in PUT method => Bad request
-	if data_json.get('quantity') is None:
-		abort(400)
-
-	quantity = data_json.get('quantity')
-
-	book = update(book_id, quantity)
+	msg = ""
+	if response.status_code == 200:
+		msg = "Book with ID:"
+	else:
+		msg = "Error! Cannot fetch book with ID"
 		
-	return book
+	return response.text, response.status_code, response.headers.items()
+
+
+# Info query
+@app.route('/info/<id>', methods=['GET'])
+def info_according_to_id(id):
+	if not id.isnumeric():
+		abort(422)
+	# Call Catalog Server, get response
+	response = requests.get(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/query-by-item/{id}')
+	
+	msg = ""
+	if response.status_code == 200:
+		msg = "All books related to topic:"
+	else:
+		msg = "Error! Cannot fetch book related to topic"
+	
+	return msg + '\n' + response.text, response.status_code, response.headers.items()
+
+# Purchase query
+@app.route('/purchase/<id>', methods=['PUT'])
+def purchase(id):
+	if not id.isnumeric():
+		abort(422)
+	# Call Order Server, get response
+	response = requests.get(f'http://{ORDER_SERVER_IP}:{ORDER_PORT}/purchase/{id}')
+	
+	msg = ""
+	if response.status_code == 200:
+		msg = "Book purchased successfully"
+	else:
+		msg = "Error! Cannot purchase"
+	
+	return msg + '\n' + response.text, response.status_code, response.headers.items()
+
+
+# Update cost and quantity query
+@app.route('/edit/<id>', methods=['PUT'])
+def edit(id):
+	if not id.isnumeric():
+		abort(422)
+	
+	data = request.json
+
+	if data is None:
+		data = {}
+
+	if data.get('quantity') is None or data.get('price') is None:
+		abort(400)
+	
+	dataReq = {'quantity': data.get('quantity'), 'price': data.get('price')}
+	# Call Catalog Server, get response
+	response = requests.put(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/updateInfo/{id}', data=json.dumps(dataReq))
+	
+	msg = ""
+	if response.status_code == 200:
+		msg = "Updated Successfully"
+	else:
+		msg = "Error! Cannot update"
+	
+	return msg + '\n' + response.text, response.status_code, response.headers.items()
