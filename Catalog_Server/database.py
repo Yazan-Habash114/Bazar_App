@@ -1,6 +1,7 @@
 import sqlite3 as sql
 import os
 
+# Initial books inserted to DB
 init_objects = [
 	{
 		'Title': 'How to get a good grade in DOS in 40 minutes a day',
@@ -29,11 +30,14 @@ init_objects = [
 ]
 
 def create_db():
+	# If the DB exists, return (Do not create new one)
 	if os.path.exists('database.sqlite'):
 		print('Database Exists')
 		return
 	else:
+		# Create new DB
 		conn = sql.connect('database.sqlite')
+		# Create table
 		conn.execute('CREATE TABLE Book(id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT NOT NULL, Topic TEXT NOT NULL, Quantity INTEGER NOT NULL, Price INTEGER NOT NULL)')
 		
 		cursor = conn.cursor()

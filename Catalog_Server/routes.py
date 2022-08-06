@@ -1,4 +1,4 @@
-from book import info, search, update
+from book import info, search, update, updateInfo
 from flask_application import app, request, abort
 import json
 
@@ -12,7 +12,7 @@ def get_books_related_to_topic(book_topic):
 	return search(book_topic)
 
 
-
+# The queries is only two categories, query-by-item & query-by-subject
 queries = {
 	'query-by-item': {
 		'function': get_info
@@ -26,13 +26,15 @@ queries = {
 # Get query and filter it
 @app.route('/<string:query>/<parameter>', methods=['GET'])
 def queryFromDB(query, parameter):
+	# If query is not in two categories
 	if query not in queries:
 		return 'Invalid query method has been called called', 404
 	
+	# Get the procedure from dictionary then call it
 	return queries[query]['function'](parameter)
 
 
-# Update an book according to specific ID
+# Update an book (Decrease quantity) according to specific ID
 @app.route('/update/<int:book_id>', methods=['PUT'])
 def update_book(book_id):
 
@@ -41,11 +43,33 @@ def update_book(book_id):
 
 	data_json = json.loads(request.data)
 
+	# If there is no quantity key in PUT method => Bad request
 	if data_json.get('quantity') is None:
-		abort(422)
+		abort(400)
 
 	quantity = data_json.get('quantity')
-
+	
 	book = update(book_id, quantity)
+		
+	return book
+
+
+# Update an book (Quantity and Cost) according to specific ID
+@app.route('/updateInfo/<int:book_id>', methods=['PUT'])
+def updateInfo_book(book_id):
+
+	if request is None:
+		abort(400)
+
+	data = json.loads(request.data)
+	
+
+	if data is None:
+		data = {}
+
+	if data.get('quantity') is None or data.get('price') is None:
+		abort(400)
+
+	book = updateInfo(book_id, data.get('quantity'), data.get('price'))
 		
 	return book
