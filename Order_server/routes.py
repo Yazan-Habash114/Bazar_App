@@ -32,7 +32,8 @@ def purchase(id):
 
 
     else: 
-        abort(response.status_code)
+        message = "This book is not found!"
+        return message, response.status_code, response.headers.items()
         
     return response.text, response.status_code, response.headers.items()
         
