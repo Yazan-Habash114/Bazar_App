@@ -7,7 +7,7 @@ init_objects = [
 		'Title': 'How to get a good grade in DOS in 40 minutes a day',
 		'Topic': 'Distributed Systems',
 		'Quantity': 3,
-		'Price': 120
+		'Price': 40
 	},
 	{
 		'Title': 'RPCs for Noobs',
@@ -19,13 +19,31 @@ init_objects = [
 		'Title': 'Xen and the Art of Surviving Undergraduate School',
 		'Topic': 'Undergraduate School',
 		'Quantity': 3,
-		'Price': 100
+		'Price': 90
 	},
 	{
 		'Title': 'Cooking for the Impatient Undergrade',
 		'Topic': 'Undergraduate School',
 		'Quantity': 3,
 		'Price': 65
+	},
+	{
+		'Title': 'How to finish Project 3 on time',
+		'Topic': 'New Book',
+		'Quantity': 3,
+		'Price': 70
+	},
+	{
+		'Title': 'Why theory classes are so hard',
+		'Topic': 'New Book',
+		'Quantity': 3,
+		'Price': 45
+	},
+	{
+		'Title': 'Spring in the Pioneer Valley',
+		'Topic': 'New Book',
+		'Quantity': 3,
+		'Price': 30
 	},
 ]
 
