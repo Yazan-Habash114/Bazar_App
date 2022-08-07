@@ -4,7 +4,7 @@ import requests
 import json
 import ast
 
-CATALOG_SERVER_IP = '10.0.0.9'
+CATALOG_SERVER_IP = '10.0.0.16'
 PORT = 5000
 
 @app.route('/purchase/<int:id>', methods=['GET'])
