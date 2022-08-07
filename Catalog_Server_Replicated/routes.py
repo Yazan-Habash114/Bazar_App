@@ -1,7 +1,7 @@
 from book import info, search, update, updateInfo
 from flask_application import app, request, abort
 import json
-
+import cache
 # Get info about a book
 def get_info(book_id):
 	return info(book_id)
@@ -48,6 +48,21 @@ def update_book(book_id):
 		abort(400)
 
 	quantity = data_json.get('quantity')
+
+
+	try:
+		book = info(book_id)
+		cache.invalidate_item(book_id)
+		cache.invalidate_topic(book.get('topic'))
+	except: 
+		return 'can not invalidate book !'
+
+	try:
+		# update values in the the replica/s
+		for replica_ip, replica_port in zip(REPLICA_CATALOG_SERVER_IPS, REPLICA_PORTS) 
+		response = requests.put(f'http://{replica_ip}:{replica_port}/update/{book_id}', data=request.data)
+	except: 
+		return 'can not update values in replica'
 	
 	book = update(book_id, quantity)
 		
@@ -70,6 +85,20 @@ def updateInfo_book(book_id):
 	if data.get('quantity') is None or data.get('price') is None:
 		abort(400)
 
+	try:
+		book = info(book_id)
+		cache.invalidate_item(book_id)
+		cache.invalidate_topic(book.get('topic'))
+	except: 
+		return 'can not invalidate book !'
+	
+	try:
+		# update values in the the replica/s
+		for replica_ip, replica_port in zip(REPLICA_CATALOG_SERVER_IPS, REPLICA_PORTS) 
+		response = requests.put(f'http://{replica_ip}:{replica_port}/update/{book_id}', data=request.data)
+	except: 
+		return 'can not update values in replica'
+		
 	book = updateInfo(book_id, data.get('quantity'), data.get('price'))
 		
 	return book
