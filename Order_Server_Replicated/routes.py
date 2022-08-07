@@ -4,8 +4,8 @@ import requests
 import json
 import ast
 
-CATALOG_SERVER_IP = '10.0.0.16'
-PORT = 5000
+CATALOG_SERVER_IP = '10.0.0.1'
+PORT = 5003
 
 @app.route('/purchase/<int:id>', methods=['GET'])
 def purchase(id):
@@ -36,4 +36,3 @@ def purchase(id):
         return message, response.status_code, response.headers.items()
         
     return response.text, response.status_code, response.headers.items()
-        

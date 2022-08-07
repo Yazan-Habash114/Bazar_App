@@ -1,8 +1,10 @@
-from flask_application import app, CATALOG_SERVER_IP, ORDER_SERVER_IP, ORDER_PORT, CATALOG_PORT, abort, request
+from flask_application import app, abort, request
 import requests
 import json
-
 from flask import jsonify
+
+# Import replication
+from replication import replication
 
 # Import caches
 from cache import lookup_cache, search_cache, SearchEntry
@@ -18,7 +20,8 @@ def search_according_to_topic(topic):
 
 
 	# Call Catalog Server, get response
-	response = requests.get(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/query-by-subject/{topic}')
+	catalog_ip, catalog_port = replication.get_catalog_info()
+	response = requests.get(f'http://{catalog_ip}:{catalog_port}/query-by-subject/{topic}')
 	
 	msg = ""
 	if response.status_code == 200:
@@ -45,7 +48,8 @@ def info_according_to_id(id):
 		return cached_book
 	
 	# Call Catalog Server, get response
-	response = requests.get(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/query-by-item/{id}')
+	catalog_ip, catalog_port = replication.get_catalog_info()
+	response = requests.get(f'http://{catalog_ip}:{catalog_port}/query-by-item/{id}')
 	
 	msg = ""
 	if response.status_code == 200:
@@ -63,7 +67,8 @@ def purchase(id):
 	if not id.isnumeric():
 		abort(422)
 	# Call Order Server, get response
-	response = requests.get(f'http://{ORDER_SERVER_IP}:{ORDER_PORT}/purchase/{id}')
+	order_ip, order_port = replication.get_order_info()
+	response = requests.get(f'http://{order_ip}:{order_port}/purchase/{id}')
 	
 	msg = ""
 	if response.status_code == 200:
@@ -90,7 +95,7 @@ def edit(id):
 	
 	dataReq = {'quantity': data.get('quantity'), 'price': data.get('price')}
 	# Call Catalog Server, get response
-	response = requests.put(f'http://{CATALOG_SERVER_IP}:{CATALOG_PORT}/updateInfo/{id}', data=json.dumps(dataReq))
+	response = requests.put(f'http://{replication.get_catalog_ip()}:{CATALOG_PORT[0]}/updateInfo/{id}', data=json.dumps(dataReq))
 	
 	msg = ""
 	if response.status_code == 200:
@@ -125,14 +130,6 @@ def invalidate_topic(book_topic):
 
     return 'Cache invalidated (topic)', 204
 
-
-# Route used by catalog servers to invalidate all cached book topics
-# This is used when a new book is added, since it might appear in search caches
-@app.route('/invalidate/topic/', methods=['DELETE'])
-def invalidate_all_topics():
-    # Remove any entry containing this topic
-    search_cache.clear()
-    return 'Cache invalidated (all topic)', 204
 
 
 # Test endpoint that dumps all the cache contents
