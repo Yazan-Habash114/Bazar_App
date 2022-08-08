@@ -94,15 +94,15 @@ def updateInfo_book(book_id):
 	except: 
 		return 'can not invalidate book !'
 	
-	try:
-		# update values in the the replica/s
-		for replica_ip, replica_port in zip(REPLICA_CATALOG_SERVER_IPS, REPLICA_PORTS) :
-			response = requests.put(f'http://{replica_ip}:{replica_port}/update/{book_id}', data=request.data)
+	# try:
+	# 	# update values in the the replica/s
+	# 	for replica_ip, replica_port in zip(REPLICA_CATALOG_SERVER_IPS, REPLICA_PORTS) :
+	# 		response = requests.put(f'http://{replica_ip}:{replica_port}/update/{book_id}', data=request.data)
 
-			if(response.status_code != 200):
-				raise Exception() 
-	except: 
-		return 'can not update values in replica'
+	# 		if(response.status_code != 200):
+	# 			raise Exception() 
+	# except: 
+	# 	return 'can not update values in replica'
 		
 	book = updateInfo(book_id, data.get('quantity'), data.get('price'))
 		
