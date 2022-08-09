@@ -36,4 +36,3 @@ def purchase(id):
         return message, response.status_code, response.headers.items()
         
     return response.text, response.status_code, response.headers.items()
-        
