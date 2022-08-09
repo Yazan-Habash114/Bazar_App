@@ -150,4 +150,4 @@ def updateInfo(book_id, quantity, price):
 		if conn:
 			conn.close()
 
-	return json.dumps(book_updated)	
+	return json.dumps(book_updated) 
