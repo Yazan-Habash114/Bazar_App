@@ -28,7 +28,7 @@ def purchase(id):
         else:
             # Else, return the book, decrement the quantity
             data = {'quantity': (quantity - 1), 'price': price}
-            response = requests.put(f'http://{CATALOG_SERVER_IP}:{PORT}/update/{id}', data=json.dumps(data) )
+            response = requests.put(f'http://{CATALOG_SERVER_IP}:{PORT}/update/{id}', data=json.dumps(data))
 
 
     else: 
