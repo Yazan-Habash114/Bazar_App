@@ -1,6 +1,7 @@
 from book import info, search, update, updateInfo
 from flask_application import app, request, abort
 import json
+import requests
 
 from cache import invalidate_item, invalidate_topic, CATALOG_ADDRESSES, CATALOG_PORTS
 
@@ -63,12 +64,13 @@ def update_book(book_id):
 	try:
 		# update values in the replica/s
 		print(CATALOG_ADDRESSES[1], CATALOG_PORTS[1])
-		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/update/{book_id}', data=request.data)
+		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/consistency/{book_id}', data=request.data)
 		if(response.status_code != 200):
 			raise Exception()
-	
-  except: 
+
+	except: 
 		return 'can not update values in replica'
+	
 	book = update(book_id, quantity)
 		
 	return book
@@ -90,7 +92,7 @@ def updateInfo_book(book_id):
 		abort(400)
 
 	try:
-    # invalidate data in the caches in front-end
+		# invalidate data in the caches in front-end
 		book = info(book_id)
 		invalidate_item(book_id)
 		invalidate_topic(json.loads(book).get('topic'))
@@ -101,12 +103,30 @@ def updateInfo_book(book_id):
 	try:
 		# update values in the the replica/s
 		print(CATALOG_ADDRESSES[1], CATALOG_PORTS[1])
-		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/update/{book_id}', data=request.data)
+		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/consistency/{book_id}', data=request.data)
 		if(response.status_code != 200):
 			raise Exception()
 	except: 
 		return 'Cannot update values in replica'
 
 	book = updateInfo(book_id, data.get('quantity'), data.get('price'))
+		
+	return book
+
+
+# Replicas Consistency
+@app.route('/consistency/<book_id>', methods=['PUT'])
+def consistency(book_id):
+
+	data_json = json.loads(request.data)
+
+	# If there is no quantity key in PUT method => Bad request
+	if data_json.get('quantity') is None or data_json.get('price') is None:
+		abort(400)
+
+	quantity = data_json.get('quantity')
+	price = data_json.get('price')
+
+	book = updateInfo(book_id, quantity, price)
 		
 	return book
