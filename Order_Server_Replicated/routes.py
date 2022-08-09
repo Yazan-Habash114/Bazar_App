@@ -4,7 +4,7 @@ import requests
 import json
 import ast
 
-CATALOG_SERVER_IP = '10.0.0.1'
+CATALOG_SERVER_IP = '10.0.0.9'
 PORT = 5003
 
 @app.route('/purchase/<int:id>', methods=['GET'])
@@ -28,7 +28,7 @@ def purchase(id):
         else:
             # Else, return the book, decrement the quantity
             data = {'quantity': (quantity - 1), 'price': price}
-            response = requests.put(f'http://{CATALOG_SERVER_IP}:{PORT}/update/{id}', data=json.dumps(data) )
+            response = requests.put(f'http://{CATALOG_SERVER_IP}:{PORT}/update/{id}', data=json.dumps(data))
 
 
     else: 
@@ -36,3 +36,4 @@ def purchase(id):
         return message, response.status_code, response.headers.items()
         
     return response.text, response.status_code, response.headers.items()
+        
