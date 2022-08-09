@@ -66,8 +66,8 @@ def update_book(book_id):
 		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/update/{book_id}', data=request.data)
 		if(response.status_code != 200):
 			raise Exception()
-
-	except: 
+	
+  except: 
 		return 'can not update values in replica'
 	book = update(book_id, quantity)
 		
@@ -90,7 +90,7 @@ def updateInfo_book(book_id):
 		abort(400)
 
 	try:
-		# invalidate data in the caches in front-end
+    # invalidate data in the caches in front-end
 		book = info(book_id)
 		invalidate_item(book_id)
 		invalidate_topic(json.loads(book).get('topic'))

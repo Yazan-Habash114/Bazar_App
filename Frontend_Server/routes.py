@@ -123,6 +123,10 @@ def invalidate_topic(book_topic):
                           if book_topic in value.topics]
 
     # Remove any entry containing this topic
+
+	if len(containing_entries) == 0: 	
+		return f'This topic {book_topic} is not in Cache', 204
+
     for entry in containing_entries:
         search_cache.remove(entry)
 
