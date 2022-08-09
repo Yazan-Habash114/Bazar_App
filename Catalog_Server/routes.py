@@ -2,7 +2,7 @@ from book import info, search, update, updateInfo
 from flask_application import app, request, abort
 import json
 
-import cache
+from cache import invalidate_item, invalidate_topic, CATALOG_ADDRESSES, CATALOG_PORTS
 
 # Get info about a book
 def get_info(book_id):
@@ -37,7 +37,7 @@ def queryFromDB(query, parameter):
 
 
 # Update an book (Decrease quantity) according to specific ID
-@app.route('/update/<int:book_id>', methods=['PUT'])
+@app.route('/update/<book_id>', methods=['PUT'])
 def update_book(book_id):
 
 	if request is None:
@@ -54,19 +54,20 @@ def update_book(book_id):
 	try:
 		# invalidate data in the caches in front-end
 		book = info(book_id)
-		cache.invalidate_item(book_id)
-		cache.invalidate_topic(book.get('topic'))
+		invalidate_item(book_id)
+		invalidate_topic(json.loads(book).get('topic'))
+		print('\nCache (proxy) invalidated!\n')
 	except: 
-		return 'can not invalidate book ! '
+		return 'can not invalidate book!'
 
 	try:
-		# update values in the the replica/s
-		for replica_ip, replica_port in zip(REPLICA_CATALOG_SERVER_IPS, REPLICA_PORTS) :
-			response = requests.put(f'http://{replica_ip}:{replica_port}/update/{book_id}', data=request.data)
-			if(response.status_code != 200):
-				raise Exception() 
-
-	except: 
+		# update values in the replica/s
+		print(CATALOG_ADDRESSES[1], CATALOG_PORTS[1])
+		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/update/{book_id}', data=request.data)
+		if(response.status_code != 200):
+			raise Exception()
+	
+  except: 
 		return 'can not update values in replica'
 	book = update(book_id, quantity)
 		
@@ -74,7 +75,7 @@ def update_book(book_id):
 
 
 # Update an book (Quantity and Cost) according to specific ID
-@app.route('/updateInfo/<int:book_id>', methods=['PUT'])
+@app.route('/updateInfo/<book_id>', methods=['PUT'])
 def updateInfo_book(book_id):
 
 	if request is None:
@@ -89,20 +90,22 @@ def updateInfo_book(book_id):
 		abort(400)
 
 	try:
+    # invalidate data in the caches in front-end
 		book = info(book_id)
-		cache.invalidate_item(book_id)
-		cache.invalidate_topic(book.get('topic'))
+		invalidate_item(book_id)
+		invalidate_topic(json.loads(book).get('topic'))
+		print('\nCache (proxy) invalidated!\n')
 	except: 
-		return 'can not invalidate book !'
+		return 'Cannot invalidate book !'
 		
 	try:
 		# update values in the the replica/s
-		for replica_ip, replica_port in zip(REPLICA_CATALOG_SERVER_IPS, REPLICA_PORTS) :
-			response = requests.put(f'http://{replica_ip}:{replica_port}/update/{book_id}', data=request.data)
-			if(response.status_code != 200):
-				raise Exception() 
+		print(CATALOG_ADDRESSES[1], CATALOG_PORTS[1])
+		response = requests.put(f'http://{CATALOG_ADDRESSES[1]}:{CATALOG_PORTS[1]}/update/{book_id}', data=request.data)
+		if(response.status_code != 200):
+			raise Exception()
 	except: 
-		return 'can not update values in replica'
+		return 'Cannot update values in replica'
 
 	book = updateInfo(book_id, data.get('quantity'), data.get('price'))
 		

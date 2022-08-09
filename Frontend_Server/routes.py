@@ -112,14 +112,8 @@ def edit(id):
 # Route used by catalog servers to invalidate book entries
 @app.route('/invalidate-item/<book_id>', methods=['DELETE'])
 def invalidate_item(book_id):
-    # If book is cached, remove it
-	if book_id in lookup_cache.cache :
-    	lookup_cache.remove(int(book_id))
-		return 'Cache invalidated (id)', 204
-	else if book_id not in lookup_cache.cache:
-		return f'{book_id} not exist in the cache !'
-
-	else : return ' Something went wrong while invalidating book !'
+    lookup_cache.remove(int(book_id))
+    return 'Cache invalidated (id)', 204
 	
 # Route used by catalog servers to invalidate book topics
 @app.route('/invalidate-topic/<book_topic>', methods=['DELETE'])
@@ -150,5 +144,5 @@ def dump():
                     'search_result': search_cache.cache[topic].search_result}
                     for topic in search_cache.lru_Q]
     }
-    print(response)
-    return response
+    # print(response)
+    return response, 200
