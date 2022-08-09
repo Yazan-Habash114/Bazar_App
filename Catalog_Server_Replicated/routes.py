@@ -2,6 +2,8 @@ from book import info, search, update, updateInfo
 from flask_application import app, request, abort
 import json
 
+from cache import invalidate_item, invalidate_topic, CATALOG_ADDRESSES, CATALOG_PORTS
+
 # Get info about a book
 def get_info(book_id):
 	return info(book_id)
@@ -35,7 +37,7 @@ def queryFromDB(query, parameter):
 
 
 # Update an book (Decrease quantity) according to specific ID
-@app.route('/update/<int:book_id>', methods=['PUT'])
+@app.route('/update/<book_id>', methods=['PUT'])
 def update_book(book_id):
 
 	if request is None:
@@ -48,14 +50,32 @@ def update_book(book_id):
 		abort(400)
 
 	quantity = data_json.get('quantity')
-	
+
+	try:
+		# invalidate data in the caches in front-end
+		book = info(book_id)
+		invalidate_item(book_id)
+		invalidate_topic(json.loads(book).get('topic'))
+		print('\nCache (proxy) invalidated!\n')
+	except: 
+		return 'can not invalidate book!'
+
+	try:
+		# update values in the replica/s
+		print(CATALOG_ADDRESSES[0], CATALOG_PORTS[0])
+		response = requests.put(f'http://{CATALOG_ADDRESSES[0]}:{CATALOG_PORTS[0]}/update/{book_id}', data=request.data)
+		if(response.status_code != 200):
+			raise Exception()
+
+	except: 
+		return 'can not update values in replica'
 	book = update(book_id, quantity)
 		
 	return book
 
 
 # Update an book (Quantity and Cost) according to specific ID
-@app.route('/updateInfo/<int:book_id>', methods=['PUT'])
+@app.route('/updateInfo/<book_id>', methods=['PUT'])
 def updateInfo_book(book_id):
 
 	if request is None:
@@ -63,12 +83,29 @@ def updateInfo_book(book_id):
 
 	data = json.loads(request.data)
 	
-
 	if data is None:
 		data = {}
 
 	if data.get('quantity') is None or data.get('price') is None:
 		abort(400)
+
+	try:
+		# invalidate data in the caches in front-end
+		book = info(book_id)
+		invalidate_item(book_id)
+		invalidate_topic(json.loads(book).get('topic'))
+		print('\nCache (proxy) invalidated!\n')
+	except: 
+		return 'Cannot invalidate book !'
+		
+	try:
+		# update values in the the replica/s
+		print(CATALOG_ADDRESSES[0], CATALOG_PORTS[0])
+		response = requests.put(f'http://{CATALOG_ADDRESSES[0]}:{CATALOG_PORTS[0]}/update/{book_id}', data=request.data)
+		if(response.status_code != 200):
+			raise Exception()
+	except: 
+		return 'Cannot update values in replica'
 
 	book = updateInfo(book_id, data.get('quantity'), data.get('price'))
 		
